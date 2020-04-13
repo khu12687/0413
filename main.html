@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>플랫포머 게임</title>
+<style>
+body{margin: 0px;}
+
+#container{
+    width: 100%;
+    height: 600px;
+    background-color: yellow;
+    overflow: hidden;
+    position: relative;
+}
+</style>
+<script src="GameObject.js"></script>
+<script src="Mario.js"></script>
+<script src="Block.js"></script>
+<script src="Item.js"></script>
+<script src="../js/lib.js"></script>
+<script>
+var container;
+var mario;
+var itemArray=[]; //치킨을 담게될 배열
+var blocks=[]; //벽돌을 담게될 배열
+var loopFlag=true;
+//벽돌의 위치 정보를 갖는 미니맵 2차원 배열!!
+//2차원 배열은 곧 데이터베이스다!!
+//1: 벽돌, 2: 버섯 
+var blockArray=[
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,1,1,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,2,0,0,0,1,1,0,0,1,0,0],
+    [0,1,1,1,1,0,0,0,0,1,1,0,0,0,1,1,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0],
+    [0,0,0,1,1,1,0,1,1,1,0,0,2,0,1,0,0,0,0,0],
+    [0,0,0,0,0,0,0,2,0,0,0,1,1,0,1,1,0,0,0,2],
+    [0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1]
+];
+addEventListener("load",function(){
+    container=document.getElementById("container");
+    container.style.height=600+"px";
+    createMario();
+    createBlock();
+    gameLoop();
+
+    //키보드 이벤트 구현
+    document.body.addEventListener("keydown",function(e){
+        switch(e.keyCode){
+            case 32: jump(); break;
+            case 37: mario.velX=-5,mario.scaleX=-1; break;
+            case 39: mario.velX=5,mario.scaleX=1; break;
+        } 
+    });
+    document.body.addEventListener("keyup",function(e){
+        switch(e.keyCode){
+            case 37: mario.velX=0; break;
+            case 39: mario.velX=0; break;
+    }    
+    });
+});
+//주인공 등장!!
+function createMario(){
+    //container,src,width,height,velX,velY,x,y
+   mario = new Mario(container,"../images/mario.png",40,40,0,0,100,100);
+}
+//벽돌 등장
+function createBlock(){
+    for(var a=0; a<blockArray.length;a++){
+        for(var i=0;i<blockArray[a].length;i++){
+            if(blockArray[a][i]==1){ //배열의 각 요소를 읽어들이다가 1을 발견한경우만 벽돌생성
+                var block = new Block(container,"../images/block2.png",50,50,0,0,(50*i),(50*a));
+                blocks.push(block);
+            }else if(blockArray[a][i]==2){
+                var item = new Item(container,"../images/food4.jpg",50,50,-1,0,(50*i),(50*a));
+                itemArray.push(item);
+            }
+        }
+     }
+}
+//마리오 점프 처리
+function jump(){
+    //마리오 발바닥이 땅에 닿으면 가능하게!!
+    //즉 마리오가 점프상태가 아니라면...이때만 점프가 가능하게..
+    if(mario.jump==false && mario.velY==0){
+        mario.velY=-15;
+        mario.jump=true;    
+    }
+}
+function gameLoop(){
+    if(loopFlag){
+        // console.log("gameLoop() called...");
+        mario.tick();
+        mario.render();
+        for(var i=0; i<itemArray.length; i++){
+            itemArray[i].tick();
+            itemArray[i].render();
+        }
+        for(var i=0; i<blocks.length; i++){
+            blocks[i].tick();
+            blocks[i].render();
+        }
+    }
+    setTimeout("gameLoop()",10);
+}
+</script>
+</head>
+<body>
+    <div id="container"></div>
+</html>
